@@ -1,0 +1,8 @@
+{
+    "env":{
+        "DB_USER":"mariakhedwala",
+        "DB_PASSWORD":"4OXsJ1acGjwmFU5A",
+        "DB_NAME":"employeecrud",
+        "JWT_KEY":"supersecret"
+    }
+}
