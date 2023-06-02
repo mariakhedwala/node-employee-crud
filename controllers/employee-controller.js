@@ -99,11 +99,11 @@ const signup = async (req, res, next) => {
 };
 
 const login = async (req, res, next) => {
-  const { email, password } = req.body;
+  const { emp_email, emp_password } = req.body;
 
   let existingEmp;
   try {
-    existingEmp = await Employee.findOne({ email: email }); //this is an async task, so in try catch
+    existingEmp = await Employee.findOne({ emp_email: emp_email }); //this is an async task, so in try catch
   } catch (err) {
     const error = new HttpError("Login in failed, email not registered", 500);
     return next(error);
@@ -116,7 +116,10 @@ const login = async (req, res, next) => {
 
   let isValidPassword = false;
   try {
-    isValidPassword = await bcrypt.compare(password, existingEmp.password);
+    isValidPassword = await bcrypt.compare(
+      emp_password,
+      existingEmp.emp_password
+    );
   } catch (err) {
     const error = new HttpError("Login in failed, check your credentials", 500);
     return next(error);
@@ -130,7 +133,7 @@ const login = async (req, res, next) => {
   let token;
   try {
     token = jwt.sign(
-      { userId: existingEmp.id, email: existingEmp.email },
+      { empId: existingEmp.id, email: existingEmp.emp_email },
       process.env.JWT_KEY,
       { expiresIn: "1h" }
     );
@@ -141,7 +144,7 @@ const login = async (req, res, next) => {
 
   res.json({
     empId: existingEmp.id,
-    email: existingEmp.email,
+    email: existingEmp.emp_email,
     token: token,
   });
 };
