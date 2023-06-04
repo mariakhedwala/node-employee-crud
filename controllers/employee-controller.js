@@ -13,6 +13,15 @@ const getEmployees = async (req, res, next) => {
     return next(error);
   }
 
+  // console.log(req.cookies["jwt"], "req");
+
+  // const cookie = req.cookie["jwt"];
+  // const claims = jwt.verify(cookie, process.env.JWT_KEY);
+  // if (!claims) {
+  //   const error = new HttpError("Login to continue", 401);
+  //   return next(error);
+  // }
+
   res.json({
     employees: employees.map((employee) =>
       employee.toObject({ getters: true })
