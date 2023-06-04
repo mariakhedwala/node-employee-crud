@@ -22,7 +22,6 @@ const getEmployees = async (req, res, next) => {
 
 const signup = async (req, res, next) => {
   const errors = validationResult(req);
-  console.log(req.body, "req,body");
   if (!errors.isEmpty()) {
     return next(new HttpError(`Invalid data, please try again`, 422));
   }
@@ -87,6 +86,11 @@ const signup = async (req, res, next) => {
     return next(error);
   }
 
+  res.cookie("jwt", token, {
+    httpOnly: true,
+    maxAge: 24 * 60 * 60 * 1000, //1 day
+  });
+
   res.status(201).json({
     empId: createdEmp.id,
     name: createdEmp.emp_name,
@@ -145,6 +149,11 @@ const login = async (req, res, next) => {
     const error = new HttpError("Login failed, try again later", 500);
     return next(error);
   }
+
+  res.cookie("jwt", token, {
+    httpOnly: true,
+    maxAge: 24 * 60 * 60 * 1000, //1 day
+  });
 
   res.json({
     empId: existingEmp.id,
@@ -225,8 +234,15 @@ const deleteEmp = async (req, res, next) => {
   res.status(200).json({ message: "Place Deleted!" });
 };
 
+const logout = async (req, res, next) => {
+  res.cookie("jwt", "", { maxAge: 0 });
+
+  res.status(200).json({ message: "Logged out!" });
+};
+
 exports.getEmployees = getEmployees;
 exports.signup = signup;
 exports.login = login;
 exports.updateEmp = updateEmp;
 exports.deleteEmp = deleteEmp;
+exports.logout = logout;

@@ -22,6 +22,7 @@ router.post(
 );
 
 router.post("/login", employeeController.login);
+router.post("/logout", employeeController.logout);
 
 router.use(checkAuth); //all the below routes are protected and can only be reached with a valid token
 
