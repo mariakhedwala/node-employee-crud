@@ -133,7 +133,11 @@ const login = async (req, res, next) => {
   let token;
   try {
     token = jwt.sign(
-      { empId: existingEmp.id, email: existingEmp.emp_email },
+      {
+        empId: existingEmp.id,
+        emp_email: existingEmp.emp_email,
+        emp_role: existingEmp.emp_role,
+      },
       process.env.JWT_KEY,
       { expiresIn: "1h" }
     );
@@ -145,10 +149,84 @@ const login = async (req, res, next) => {
   res.json({
     empId: existingEmp.id,
     email: existingEmp.emp_email,
+    role: existingEmp.emp_role,
     token: token,
   });
+};
+
+const updateEmp = async (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return next(new HttpError(`Invalid data`, 422));
+  }
+  const { emp_name, emp_designation, emp_role, emp_address } = req.body; //data part of req body
+  const empId = req.params.eid; //data part of params
+
+  let employee;
+  try {
+    employee = await Employee.findById(empId);
+  } catch (err) {
+    const error = new HttpError(
+      "something went wrong, could not update employee",
+      500
+    );
+    return next(error);
+  }
+
+  if (req.empData.role !== "admin") {
+    //checkk if the logged in user is admin, so the emp details can be changed
+    const error = new HttpError("You are not allowed to edit", 401);
+    return next(error);
+  }
+
+  //const stores the address of the obj and not the obj itself
+  employee.emp_name = emp_name;
+  employee.emp_designation = emp_designation;
+  employee.emp_role = emp_role;
+  employee.emp_address = emp_address;
+
+  try {
+    await employee.save();
+  } catch (err) {
+    const error = new HttpError("something went wrong", 500);
+    return next(error);
+  }
+
+  res.status(200).json({ employee: employee.toObject({ getters: true }) });
+};
+
+const deleteEmp = async (req, res, next) => {
+  const empId = req.params.eid;
+  let emp;
+  try {
+    emp = await Employee.findById(empId);
+  } catch (err) {
+    const error = new HttpError("something went wrong", 500);
+    return next(error);
+  }
+
+  if (!emp) {
+    const error = new HttpError("could not find employee", 404);
+    return next(error);
+  }
+
+  if (req.empData.role !== "admin") {
+    const error = new HttpError("You are not allowed to edit", 401);
+    return next(error);
+  }
+
+  try {
+    await emp.deleteOne();
+  } catch (err) {
+    const error = new HttpError("Failed to delete", 500);
+    return next(error);
+  }
+
+  res.status(200).json({ message: "Place Deleted!" });
 };
 
 exports.getEmployees = getEmployees;
 exports.signup = signup;
 exports.login = login;
+exports.updateEmp = updateEmp;
+exports.deleteEmp = deleteEmp;
