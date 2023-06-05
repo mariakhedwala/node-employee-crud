@@ -167,6 +167,7 @@ const login = async (req, res, next) => {
   res.json({
     empId: existingEmp.id,
     email: existingEmp.emp_email,
+    name: existingEmp.emp_name,
     role: existingEmp.emp_role,
     token: token,
   });
